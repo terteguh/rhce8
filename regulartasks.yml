@@ -1,0 +1,11 @@
+---
+- name: regular task
+  hosts: all
+  become: yes
+  tasks:
+    - name: create a cron file under /etc/cron.d
+      cron:
+        name: datejob
+        hour: "12"
+        user: root
+        job: "date >> /root/datefile"

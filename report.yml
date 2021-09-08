@@ -1,0 +1,35 @@
+
+---
+- name: Report Sepcs
+  hosts: all
+
+  vars:
+    details:
+      - hw_key: HOST
+        hw_value: "{{ ansible_fqdn | default('NONE', true) }}"
+      - hw_key: MEMORY
+        hw_value: "{{ ansible_memtotal_mb | default('NONE', true) }}"
+      - hw_key: BIOS
+        hw_value: "{{ ansible_bios_version | default('NONE', true) }}"
+      - hw_key: VDA_DISK_SIZE
+        hw_value: "{{ ansible_devices.sda.size | default('NONE', true) }}"
+      - hw_key: VDB_DISK_SIZE
+        hw_value: "{{ ansible_devices.sdb.size | default('NONE', true) }}"
+
+  tasks:
+    - name: create folder
+      file:
+        path: /home/teguh/ansible/
+        state: directory
+
+    - name: copy
+      copy:
+        src: report.txt
+        dest: /home/teguh/ansible/myreport.txt
+    - name: populate
+      lineinfile:
+        path: /home/teguh/ansible/myreport.txt
+        regexp: '^{{ item.hw_key }}='
+        line: "{{ item.hw_key }}={{ item.hw_value }}"
+      loop: "{{ details }}"
+

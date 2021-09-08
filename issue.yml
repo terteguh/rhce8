@@ -1,0 +1,24 @@
+---
+- name: issue
+  hosts: dev,test,prod
+  become: yes
+
+  tasks:
+    - name: dev
+      copy:
+        content: "Developement"
+        dest: /etc/issue
+      when: inventory_hostname in groups['dev']
+
+    - name: test
+      copy:
+        content: "Test"
+        dest: /etc/issue
+      when: inventory_hostname in groups['test']
+
+    - name: prod
+      copy:
+        content: "Production"
+        dest: /etc/issue
+      when: inventory_hostname in groups['prod']
+

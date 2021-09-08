@@ -1,0 +1,95 @@
+---
+- name: logvol
+  hosts: all
+  become: true
+  vars:
+    - vg_name: vg0
+    - lv_name: lv0
+    - lv_large: 1500M
+    - lv_small: 800M
+    - vg_not_exist: "Volume group doesn't exist"
+    - vg_not_enough: "Not enough space for logical volume"
+    - fs_path: /dev/{{ vg_name }}/{{lv_name}}
+    - fs_type: xfs
+
+  tasks:
+    - name: create logical volume
+      block:
+        - name: BLOCK create partition
+          parted:
+            device: /dev/sdb
+            number: 1
+            flags: [lvm]
+            state: present
+        - name: BLOCK wait 3 seconds
+          wait_for:
+            timeout: 3
+          delegate_to: localhost
+        - name: BLOCK create volume group
+          lvg:
+            vg: "{{ vg_name }}"
+            pvs: /dev/sdb1
+            state: present
+        - name: BLOCK wait 3 seconds
+          wait_for:
+            timeout: 3
+          delegate_to: localhost
+        - name: BLOCK create logical volume
+          lvol:
+            vg: "{{ vg_name }}"
+            lv: "{{ lv_name }}"
+            size: "{{ lv_large }}"
+            state: present
+          when: vg_name in ansible_lvm['vgs']
+        - name: BLOCK wait 3 seconds
+          wait_for:
+            timeout: 3
+          delegate_to: localhost
+        - name: BLOCK format filesystem
+          filesystem:
+            fstype: "{{ fs_type }}"
+            dev: "{{ fs_path }}"
+            #when: lv_name in ansible_lvm['lvs']
+      rescue:
+        - name: RESCUE debug not exist
+          debug:
+            msg: "{{ vg_not_exist }}"
+          when: vg_name not in ansible_lvm['vgs']
+        - name: RESCUE debug not enough
+          debug:
+            msg: "{{ vg_not_enough }}"
+          when: vg_name in ansible_lvm['vgs']
+        - name: RESCUE wait 3 seconds
+          wait_for:
+            timeout: 3
+          delegate_to: localhost
+        - name: RESCUE create logical volume
+          lvol:
+            vg: "{{ vg_name }}"
+            lv: "{{ lv_name }}"
+            size: "{{ lv_small }}"
+            state: present
+          #when: vg_name in ansible_lvm['vgs']
+        - name: RESCUE wait 3 seconds
+          wait_for:
+            timeout: 3
+          delegate_to: localhost
+        - name: RESCUE format filesystem
+          filesystem:
+            fstype: "{{ fs_type }}"
+            dev: "{{ fs_path }}"
+          #when: lv_name in ansible_lvm['lvs']
+      always:
+        - name: ALWAYS wait 5 seconds
+          wait_for:
+            timeout: 5
+          delegate_to: localhost
+        - name: ALWAYS debug success
+          debug:
+            msg: "Playbook success"
+          when: lv_name in ansible_lvm['lvs']
+        - name: ALWAYS debug failed
+          debug:
+            msg: "Playbook failed"
+          when: lv_name not in ansible_lvm['lvs']
+

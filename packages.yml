@@ -1,0 +1,27 @@
+---
+- name: install package
+  hosts: dev,prod,webservers
+  become: true
+
+  tasks:
+    - name: install httpd, mod_ssl, and mariadb
+      yum:
+        name:
+          - httpd
+          - mod_ssl
+          - mariadb
+        state: latest
+
+    - name: install on dev only
+      yum:
+        name:
+          - '@Development tools'
+        state: latest
+      when: inventory_hostname in groups['dev']
+
+    - name: update all package in dev
+      yum:
+        name: "*"
+        state: latest
+      when: inventory_hostname in groups['dev']
+

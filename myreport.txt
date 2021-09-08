@@ -1,0 +1,7 @@
+---------------------------------
+HOST=redhat1.mshome.net
+MEMORY=1751
+BIOS=Hyper-V UEFI Release v4.0
+VDA_DISK_SIZE=127.00 GB
+VDB_DISK_SIZE=NONE
+---------------------------------

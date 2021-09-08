@@ -1,0 +1,15 @@
+[dev]
+redhat1.mshome.net
+redhat2.mshome.net
+[test]
+redhat2.mshome.net
+
+[proxy]
+redhat3.mshome.net
+
+[prod]
+redhat4.mshome.net
+redhat5.mshome.net
+
+[webservers:children]
+prod

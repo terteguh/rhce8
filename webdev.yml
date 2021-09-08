@@ -1,0 +1,37 @@
+---
+- name: webcontent
+  hosts: dev
+  become: true
+  tasks:
+    - name: create user
+      user:
+        name: webdev
+        state: present
+
+    - name: create web directory
+      file:
+        state: directory
+        path: /webdev
+        owner: webdev
+        mode: '2755'
+
+    - name: create /var/www/html/webdev
+      file:
+        state: directory
+        path: /var/www/html/webdev
+        force: yes
+
+    - name: create link
+      file:
+        state: link
+        src: /webdev
+        dest: /var/www/html/webdev
+        force: yes
+
+    - name: create index.html
+      copy:
+        content: Development
+        dest: /webdev/index.html
+        setype: httpd_sys_content_t
+        #state: present
+
